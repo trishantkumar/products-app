@@ -91,6 +91,7 @@
 <script>
 import axios from 'axios';
 import Pagination from 'v-pagination-3';
+import { useProductStore } from "../store/ProductStore"
 export default {
     name: 'ProductView',
     data() {
@@ -107,7 +108,8 @@ export default {
         Pagination
     },
     async mounted() {
-        await this.getProducts();
+        await useProductStore().fetchProducts(this.skip, this.limit);
+        this.allProducts = useProductStore().allProducts;
     },
     methods: {
         closeModal() {
@@ -116,35 +118,14 @@ export default {
         },
         openEditModal(data) {
             this.isEditModal = true;
-            this.editModalData = data;
-        },
-        getProducts() {
-            axios.get('https://dummyjson.com/products?skip=' + this.skip + '&limit=' + this.limit)
-                .then(res => {
-                    this.allProducts = res.data;
-                })
-                .catch(err => {
-                    console.log(err)
-                })
+            this.editModalData = {...data};
         },
         myCallback() {
             this.skip = (this.page * this.limit) - this.limit;
             this.getProducts();
         },
         updateDetails() {
-            axios.put('https://dummyjson.com/products/' + this.editModalData.id,
-                {
-                    title: this.editModalData.title
-                },
-                {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then(res => {
-                    console.log(res)
-                })
-                .catch(err => {
-                    console.log(err)
-                })
+            useProductStore().updateDetails(this.editModalData.id, this.editModalData.title);
         }
     }
 }
